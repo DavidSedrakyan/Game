@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using UnityEngine;
 
 public class ballMovement : MonoBehaviour {
@@ -22,9 +23,11 @@ public class ballMovement : MonoBehaviour {
     private float timeK;
     private float distanceK;
 
+    private bool GameStarted;
+
     // Use this for initialization
     void Start() {
-
+        GameStarted = true;
         sTotal = Mathf.PI * R + 2 * col.radius + 2*Gatey;
         
         timeK = 10 / timeTotal;
@@ -96,8 +99,8 @@ public class ballMovement : MonoBehaviour {
         if (Input.GetMouseButtonUp(0))
         {
             openGates();
+            GameStarted = true;
         };
-
 
     }
 
@@ -182,14 +185,25 @@ public class ballMovement : MonoBehaviour {
         tempPosition = calcPosition(0);
 
         transform.position = tempPosition;
+
+        GameStarted = false;
     }
+
+    public Transform canvas;
 
     void OnTriggerEnter2D(Collider2D collision)
     {
-        if(collision.gameObject.tag == "wall")
+        if (collision.gameObject.tag == "wall")
         {
-            Debug.Log("TriggerEnter");
-            Score = -1;
+            if (GameStarted == true)
+            {
+                gameOverScore.text = Score.ToString();
+                Score = 0;
+                count.text = Score.ToString();
+               
+                Pause();
+                
+            }
             gameOver();
         }
     }
@@ -198,17 +212,39 @@ public class ballMovement : MonoBehaviour {
     [SerializeField]
     private Text count;
 
+    [SerializeField]
+    private Text gameOverScore;
+
+    [SerializeField]
+    private Button tapToPlayButton;
+
+    public void Pause()
+    {
+        if (canvas.gameObject.activeInHierarchy == false)
+        {
+            canvas.gameObject.SetActive(true);
+            Time.timeScale = 0;
+
+        } else
+        {
+            SceneManager.LoadScene("qq");
+            Score = 0;
+            canvas.gameObject.SetActive(false);
+            Time.timeScale = 1;
+        }
+    }
+
     void OnTriggerExit2D(Collider2D other)
     {
-        if(other.gameObject.tag == "scoretrigger")
+        if (other.gameObject.tag == "scoretrigger")
         {
-            Score++;
-            count.text = Score.ToString();
-            string scoreString = Score.ToString();
-            Debug.Log("triggerExit");
-            Debug.Log(Score);
-        }
+            if (GameStarted == true)
+            {
+                Score++;
+                count.text = Score.ToString();
+            }
 
+        }
     }
 
 
